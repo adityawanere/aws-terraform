@@ -55,7 +55,6 @@ jobs:
 
       - name: Setup Linux Site
         run: |
-          SCRIPT_CONTENT=$(app-files/setup.sh)
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --comment "Setup" \
