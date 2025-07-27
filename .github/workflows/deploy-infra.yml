@@ -56,11 +56,11 @@ jobs:
 
       - name: Setup Linux Site
         run: |
-          SCRIPT_CONTENT=$(jq -Rs '.' < app-files/setup.sh)
+          SCRIPT_CONTENT=$(jq -Rc . < app-files/setup.sh | jq -s .)
 
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --comment "Setup" \
             --targets "Key=instanceIds,Values=${{ steps.tf-output.outputs.EC2_INSTANCE_ID}}" \
-            --parameters commands="[$SCRIPT_CONTENT]" \
+            --parameters "commands=$SCRIPT_CONTENT"  \
             --region ${{ env.AWS_REGION}}
