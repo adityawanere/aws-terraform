@@ -60,5 +60,5 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --comment "Setup" \
             --targets "Key=instanceIds,Values=${{ steps.tf-output.outputs.EC2_INSTANCE_ID}}" \
-            --parameters commands=["$(<app-files/setup.sh)"] \
+            --parameters commands=["$(cat app-files/setup.sh)"] \
             --region ${{ env.AWS_REGION}}
