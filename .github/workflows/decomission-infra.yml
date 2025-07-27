@@ -2,7 +2,7 @@ name: Decomission Infra using Terraform
 on:
   workflow_dispatch:
 jobs:
-  deploy-infra:
+  destroy-infra:
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
