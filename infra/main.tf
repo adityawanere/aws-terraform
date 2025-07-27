@@ -131,4 +131,3 @@ resource "aws_instance" "linux_website" {
     Name = "Linux-Site"
   }
 }
-
