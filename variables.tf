@@ -7,8 +7,3 @@ variable "instance_type" {
 variable "key_name" {
   description = "Access Key ID"
 }
-
-# variable "public_key_path" {
-#   description = "Path to public key (.pub)"
-#   type        = string
-# }
