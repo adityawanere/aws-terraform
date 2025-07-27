@@ -44,7 +44,7 @@ jobs:
       - name: Export EC2 Instance ID from output
         id: tf-output
         run: |
-          echo "EC2_INSTANCE_ID=$(terrform output -raw ec2_instance_id)" >> $GITHUB_OUTPUT
+          echo "EC2_INSTANCE_ID=$(terraform output -raw ec2_instance_id)" >> $GITHUB_OUTPUT
         working-directory: infra
 
       - name: Configure AWS credentials
