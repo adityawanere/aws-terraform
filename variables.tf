@@ -5,5 +5,7 @@ variable "instance_type" {
 }
 
 variable "key_name" {
-  description = "Access Key ID"
+  description = "Access Key name"
+  type        = string
+  default     = "linux-site-key"
 }
