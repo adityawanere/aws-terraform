@@ -1,2 +1,3 @@
 # aws-terraform
-AWS deployment of basic project with EC2 instance with RDP 
+
+AWS deployment of Website project with EC2 instance with linux Image
