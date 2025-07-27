@@ -3,6 +3,8 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - infra/*
 jobs:
   deploy-infra:
     runs-on: ubuntu-latest
