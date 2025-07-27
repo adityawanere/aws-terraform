@@ -88,6 +88,34 @@ resource "aws_route_table_association" "rta" {
   route_table_id = aws_route_table.rt.id
 }
 
+# Create an IAM Role that EC2 can assume
+resource "aws_iam_role" "ssm_role" {
+  name = "ec2_ssm_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action = "sts:AssumeRole",
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      },
+      Effect = "Allow",
+    }]
+  })
+}
+
+# Attach the SSM managed policy to the IAM role
+resource "aws_iam_role_policy_attachment" "ssm_attach" {
+  role       = aws_iam_role.ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+
+# Create an instance profile (needed to associate IAM role with EC2)
+resource "aws_iam_instance_profile" "ssm_profile" {
+  name = "ec2_ssm_profile"
+  role = aws_iam_role.ssm_role.name
+}
+
 
 # Creates Linux EC2 instance
 resource "aws_instance" "linux_website" {
@@ -97,8 +125,10 @@ resource "aws_instance" "linux_website" {
   vpc_security_group_ids      = [aws_security_group.linux_site_sec_grp.id]
   key_name                    = var.key_name
   associate_public_ip_address = true
+  iam_instance_profile        = aws_iam_instance_profile.ssm_profile.name
 
   tags = {
     Name = "Linux-Site"
   }
 }
+
