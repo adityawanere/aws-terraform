@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-PRE_SIGNED_URL="$1"
+PRE_SIGNED_URL="__signed_url__"
 TAR_FILE="/tmp/react-app-latest.tar"
 IMAGE_NAME="react-app"
 
