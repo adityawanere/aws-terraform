@@ -1,0 +1,37 @@
+name: Build React app
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - app-files/*
+jobs:
+  build-app:
+    runs-on: ubunutu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+    steps:
+      - name: Login to Amazon ECR
+        id: login-ecr
+        run: |
+          aws ecr get-login-password \
+           | docker login \
+               --username AWS \
+               --password-stdin ${{ secrets.ECR_REGISTRY }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.ECR_REPO_NAME }} .
+        working-directory: app-files
+
+      - name: Tag image for ECR
+        run: |
+          docker tag ${{ secrets.ECR_REPO_NAME }}:latest ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPO_NAME }}:latest
+        working-directory: app-files
+
+      - name: Push to ECR
+        run: |
+          docker push ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPO_NAME }}:latest
+        working-directory: app-files
