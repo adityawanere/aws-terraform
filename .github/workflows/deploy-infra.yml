@@ -1,10 +1,11 @@
 name: Deploy Infra using Terraform
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - infra/*
+  # pull_request:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - infra/*
+  workflow_dispatch:
 jobs:
   deploy-infra:
     runs-on: ubuntu-latest
