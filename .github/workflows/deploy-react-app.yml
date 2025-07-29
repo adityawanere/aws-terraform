@@ -53,7 +53,7 @@ jobs:
 
           sed -i -e "s|__signed_url__|$URL|g" ./scripts/setup-react-app.sh
           sed -i -e "s|__image_repo_url__|${{ steps.get-paramters.outputs.ecr_registry_url }}|g" ./scripts/setup-react-app.sh
-          sed -i -e "s|__image_repo_url__|${{ steps.get-paramters.outputs.ecr_repo_name }}|g" ./scripts/setup-react-app.sh
+          sed -i -e "s|__image_name__|${{ steps.get-paramters.outputs.ecr_repo_name }}|g" ./scripts/setup-react-app.sh
             
           cat ./scripts/setup-react-app.sh
 
