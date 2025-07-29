@@ -17,7 +17,7 @@ resource "aws_internet_gateway" "igw" {
 }
 
 # Creates a Network Security Group
-resource "aws_security_group" "linux_site_sec_grp" {
+resource "aws_security_group" "react_site_sec_grp" {
   vpc_id = aws_vpc.main_vpc.id
 
   tags = {
@@ -27,7 +27,7 @@ resource "aws_security_group" "linux_site_sec_grp" {
 
 # Creates HTTP inbound rule
 resource "aws_vpc_security_group_ingress_rule" "allow_http" {
-  security_group_id = aws_security_group.linux_site_sec_grp.id
+  security_group_id = aws_security_group.react_site_sec_grp.id
   ip_protocol       = "tcp"
   from_port         = 80
   to_port           = 80
@@ -36,7 +36,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_http" {
 
 # Creates HTTPS inbound rule
 resource "aws_vpc_security_group_ingress_rule" "allow_https" {
-  security_group_id = aws_security_group.linux_site_sec_grp.id
+  security_group_id = aws_security_group.react_site_sec_grp.id
   ip_protocol       = "tcp"
   from_port         = 443
   to_port           = 443
@@ -45,21 +45,21 @@ resource "aws_vpc_security_group_ingress_rule" "allow_https" {
 
 # Creates SSH inbound rule
 resource "aws_vpc_security_group_ingress_rule" "allow_ssh" {
-  security_group_id = aws_security_group.linux_site_sec_grp.id
+  security_group_id = aws_security_group.react_site_sec_grp.id
   ip_protocol       = "tcp"
   from_port         = 22
   to_port           = 22
   cidr_ipv4         = "0.0.0.0/0"
 }
 resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
-  security_group_id = aws_security_group.linux_site_sec_grp.id
+  security_group_id = aws_security_group.react_site_sec_grp.id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1" # semantically equivalent to all ports
 }
 
 
 # Creates a Subnet
-resource "aws_subnet" "linux_site_subnet" {
+resource "aws_subnet" "react_site_subnet" {
   vpc_id                  = aws_vpc.main_vpc.id
   cidr_block              = "10.0.1.0/26"
   map_public_ip_on_launch = true
@@ -84,7 +84,7 @@ resource "aws_route_table" "rt" {
 
 # Associate the Route Table with Subnet
 resource "aws_route_table_association" "rta" {
-  subnet_id      = aws_subnet.linux_site_subnet.id
+  subnet_id      = aws_subnet.react_site_subnet.id
   route_table_id = aws_route_table.rt.id
 }
 
@@ -118,16 +118,27 @@ resource "aws_iam_instance_profile" "ssm_profile" {
 
 
 # Creates Linux EC2 instance
-resource "aws_instance" "linux_website" {
+resource "aws_instance" "react_site_ec2_instance" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
-  subnet_id                   = aws_subnet.linux_site_subnet.id
-  vpc_security_group_ids      = [aws_security_group.linux_site_sec_grp.id]
+  subnet_id                   = aws_subnet.react_site_subnet.id
+  vpc_security_group_ids      = [aws_security_group.react_site_sec_grp.id]
   key_name                    = var.key_name
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ssm_profile.name
 
   tags = {
-    Name = "Linux-Site"
+    Name = "React-Site"
   }
 }
+
+# Store EC2 Instance ID
+resource "aws_ssm_parameter" "react_site_ec2_instance_id" {
+  name  = "/devops/react-site-ec2-instance-id"
+  type  = "String"
+  value = aws_instance.react_site_ec2_instance.id
+  tags = {
+    Name = "React-Site"
+  }
+}
+
