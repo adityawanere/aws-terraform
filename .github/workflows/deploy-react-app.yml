@@ -50,8 +50,9 @@ jobs:
 
           sudo apt-get install -y dos2unix
           sudo dos2unix ./scripts/*
-
-          sed -i -e "s|__signed_url__|$URL|g" ./scripts/setup-react-app.sh
+          
+          ESCAPED_URL=$(printf '%s\n' "$URL" | sed 's/[&/\]/\\&/g')
+          sed -i -e "s|__signed_url__|$ESCAPED_URL|g" ./scripts/setup-react-app.sh
           sed -i -e "s|__image_repo_url__|${{ steps.get-paramters.outputs.ecr_registry_url }}|g" ./scripts/setup-react-app.sh
           sed -i -e "s|__image_name__|${{ steps.get-paramters.outputs.ecr_repo_name }}|g" ./scripts/setup-react-app.sh
             
