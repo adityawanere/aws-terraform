@@ -46,7 +46,7 @@ jobs:
           # Replace the placeholder in the file
           sed -i "s|__signed_url__|$ESCAPED_URL|g" "$SCRIPT_PATH"
 
-          SCRIPT_CONTENT=$(jq -Rs . < "$SCRIPT_PATH")
+          SCRIPT_CONTENT=$(jq -Rs . < "$SCRIPT_PATH" | jq -s .)
 
           aws ssm send-command \
           --document-name "AWS-RunShellScript" \
