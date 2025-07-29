@@ -38,7 +38,7 @@ jobs:
       - name: Deploy build
         run: |
           SCRIPT_CONTENT=$(jq -Rc . < scripts/setup-react-app.sh | jq -s .)
-          PRE_SIGNED_URL=${{ steps.presign-url.outputs.presigned_url }}
+          PRE_SIGNED_URL="${{ steps.presign-url.outputs.presigned_url }}"
 
           aws ssm send-command \
           --document-name "AWS-RunShellScript" \
