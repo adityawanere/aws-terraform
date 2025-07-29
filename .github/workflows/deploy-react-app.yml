@@ -37,12 +37,20 @@ jobs:
 
       - name: Deploy build
         run: |
-          SCRIPT_CONTENT=$(jq -Rc . < scripts/setup-react-app.sh | jq -s .)
+          SCRIPT_PATH="scripts/setup-react-app.sh"
           PRE_SIGNED_URL="${{ steps.presign-url.outputs.presigned_url }}"
+
+          # Escape slashes in the URL for safe substitution
+          ESCAPED_URL=$(printf '%s\n' "$PRE_SIGNED_URL" | sed 's/[&/\]/\\&/g')
+
+          # Replace the placeholder in the file
+          sed -i "s|__signed_url__|$ESCAPED_URL|g" "$SCRIPT_PATH"
+
+          SCRIPT_CONTENT=$(jq -Rs . < "$SCRIPT_PATH")
 
           aws ssm send-command \
           --document-name "AWS-RunShellScript" \
           --comment "Deploy React app" \
           --targets "Key=instanceIds,Values=${{ steps.get-ec2-instance-id.outputs.ec2_instance_id }}" \
-          --parameters "commands=[\"bash -c '$SCRIPT $PRE_SIGNED_URL'\"]"  \
+          --parameters "commands=[$SCRIPT_CONTENT]"  \
           --region ${{ env.AWS_REGION}}
