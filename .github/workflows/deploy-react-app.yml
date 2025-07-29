@@ -40,13 +40,11 @@ jobs:
           SCRIPT_PATH="scripts/setup-react-app.sh"
           PRE_SIGNED_URL="${{ steps.presign-url.outputs.presigned_url }}"
 
-          # Escape slashes in the URL for safe substitution
-          ESCAPED_URL=$(printf '%s\n' "$PRE_SIGNED_URL" | sed 's/[&/\]/\\&/g')
+          # Inline substitution of the placeholder
+          SCRIPT_CONTENT=$(sed "s|__signed_url__|$PRE_SIGNED_URL|g" "$SCRIPT_PATH")
 
-          # Replace the placeholder in the file
-          sed -i "s|__signed_url__|$ESCAPED_URL|g" "$SCRIPT_PATH"
-
-          SCRIPT_CONTENT=$(jq -Rs . < "$SCRIPT_PATH" | jq -s .)
+          # Convert to array of commands
+          SCRIPT_LINES=$(printf '%s\n' "$SCRIPT_CONTENT" | jq -R . | jq -s .)
 
           aws ssm send-command \
           --document-name "AWS-RunShellScript" \
