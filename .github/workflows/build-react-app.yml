@@ -100,12 +100,12 @@ jobs:
           aws s3 cp react-app.tar s3://adi-s3-bucket-01/latest-builds/react-app-latest.tar --storage-class STANDARD_IA
         working-directory: app-files
 
-      - name: Commit updated version.json
-        run: |
-          git config --global user.name "Aditya Wanere"
-          git config --global user.email "aditya.wanere2000@gmail.com"
+      # - name: Commit updated version.json
+      #   run: |
+      #     git config --global user.name "Aditya Wanere"
+      #     git config --global user.email "aditya.wanere2000@gmail.com"
 
-          git add version.json
-          git commit -m "Increments app version to ${{ steps.get-version.outputs.version }}" || echo "No changes to commit"
-          git push origin main --force
-        working-directory: app-files
+      #     git add version.json
+      #     git commit -m "Increments app version to ${{ steps.get-version.outputs.version }}" || echo "No changes to commit"
+      #     git push origin main --force
+      #   working-directory: app-files
