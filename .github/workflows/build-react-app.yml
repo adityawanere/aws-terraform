@@ -24,6 +24,29 @@ jobs:
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY}}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Read & Increment version
+        id: get-version
+        run: |
+          fullVersion=$(jq -r '.["app-version"]' version.json)
+          echo "Full Verison: $fullVersion"
+          majorVersion=$(echo "$fullVersion" | cut -d. -f1)
+          minorVersion=$(echo "$fullVersion" | cut -d. -f2)
+          patchVersion=$(echo "$fullVersion" | cut -d. -f3)
+          buildVersion=$(echo "$fullVersion" | cut -d. -f4)
+
+          # Incrementing Build Version
+          newBuildVersion=$((buildVersion + 1))
+          echo "New Build Version: $newBuildVersion"
+
+          newFullVersion="$majorVersion.$minorVersion.$patchVersion.$newBuildVersion"
+          echo "New Full Version: $newFullVersion"
+
+          # Update json with new version
+          jq --arg ver "$newFullVersion" '.["app-version"] = $ver' version.json > temp.json && mv temp.json version.json
+
+          echo "version=$newFullVersion" >> $GITHUB_OUTPUT
+        working-directory: app-files
+
       - name: Get ECR info
         id: get-ecr-info
         run: |
@@ -51,15 +74,30 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ steps.get-ecr-info.outputs.ecr_repo_name }} .
-        working-directory: ./app-files
+          docker build -t ${{ steps.get-ecr-info.outputs.ecr_repo_name }}:${{ steps.get-version.outputs.version }} .
+        working-directory: app-files
 
       - name: Tag image for ECR
         run: |
+          # Tag with version
+          docker tag ${{ steps.get-ecr-info.outputs.ecr_repo_name }}:${{ steps.get-version.outputs.version }} ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:${{ steps.get-version.outputs.version }}
+
+          # Also Tag Latest
           docker tag ${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest
         working-directory: app-files
 
       - name: Push to ECR
         run: |
+          docker push ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:${{ steps.get-version.outputs.version }}
           docker push ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest
+        working-directory: app-files
+
+      - name: Save Docker image as tar
+        run: |
+          docker save -o react-app.tar ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest
+        working-directory: app-files
+
+      - name: Upload Docker tar to S3 (latest only)
+        run: |
+          aws s3 cp react-app.tar s3://adi-s3-bucket-01/latest-builds/react-app-latest.tar --storage-class STANDARD_IA
         working-directory: app-files
