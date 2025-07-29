@@ -1,10 +1,11 @@
 name: Build React app
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - app-files/*
+  #   pull_request:
+  #     branches:
+  #       - main
+  #     paths:
+  #       - app-files/*
+  workflow_dispatch:
 jobs:
   build-app:
     runs-on: ubuntu-latest
