@@ -142,6 +142,7 @@ resource "aws_ssm_parameter" "react_site_ec2_instance_id" {
   }
 }
 
+# Create ECR Registry
 resource "aws_ecr_repository" "my_ecr_registry" {
   name                 = "main-ecr"
   image_tag_mutability = "MUTABLE"
@@ -155,3 +156,25 @@ resource "aws_ecr_repository" "my_ecr_registry" {
   }
 }
 
+# Fetch current acc id and region
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+# Store ecr_Registry_url
+resource "aws_ssm_parameter" "ecr_regitry_url" {
+  name  = "/devops/ecr-registry_url"
+  type  = "String"
+  value = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com"
+  tags = {
+    Name = "React-Site"
+  }
+}
+
+# Store Repo name
+resource "aws_ssm_parameter" "ecr_repo_name" {
+  name  = "/devops/ecr-repo-name"
+  type  = "String"
+  value = aws_ecr_repository.my_ecr_registry.name
+  tags = {
+    Name = "React-Site"
+  }
+}
