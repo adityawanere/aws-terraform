@@ -42,27 +42,3 @@ jobs:
       - name: Apply
         run: terraform apply -auto-approve tfplan
         working-directory: infra
-
-      - name: Export EC2 Instance ID from output
-        id: tf-output
-        run: |
-          echo "EC2_INSTANCE_ID=$(terraform output -raw ec2_instance_id)" >> $GITHUB_OUTPUT
-        working-directory: infra
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY}}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Setup Linux Site
-        run: |
-          SCRIPT_CONTENT=$(jq -Rc . < app-files/setup.sh | jq -s .)
-
-          aws ssm send-command \
-            --document-name "AWS-RunShellScript" \
-            --comment "Setup" \
-            --targets "Key=instanceIds,Values=${{ steps.tf-output.outputs.EC2_INSTANCE_ID}}" \
-            --parameters "commands=$SCRIPT_CONTENT"  \
-            --region ${{ env.AWS_REGION}}
