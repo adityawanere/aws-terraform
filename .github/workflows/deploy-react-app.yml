@@ -20,14 +20,28 @@ jobs:
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY}}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Get EC2 Instance ID from SSM
-        id: get-ec2-instance-id
+      - name: Get required parameters
+        id: get-paramters
         run: |
           EC2_INSTANCE_ID=$(aws ssm get-parameter \
-          --name "/devops/react-site-ec2-instance-id" \
-          --query "Parameter.Value" \
-          --output text)
+                                --name "/devops/react-site-ec2-instance-id" \
+                                --query "Parameter.Value" \
+                                --output text)
           echo "ec2_instance_id=$EC2_INSTANCE_ID" >> $GITHUB_OUTPUT
+
+          ECR_REGISTRY_URL=$(aws ssm get-parameter \
+                                --name "/devops/ecr-registry_url" \
+                                --query "Parameter.Value" \
+                                --output text)
+
+          echo "ecr_registry_url=$ECR_REGISTRY_URL" >> $GITHUB_OUTPUT
+
+          ECR_REPO_NAME=$(aws ssm get-parameter \
+                                --name "/devops/ecr-repo-name" \
+                                --query "Parameter.Value" \
+                                --output text)
+
+            echo "ecr_repo_name=$ECR_REPO_NAME" >> $GITHUB_OUTPUT
 
       - name: Generate pre-signed URL
         id: presign-url
@@ -38,7 +52,9 @@ jobs:
           sudo dos2unix ./scripts/*
 
           sed -i -e "s|__signed_url__|$URL|g" ./scripts/setup-react-app.sh
-
+          sed -i -e "s|__image_repo_url__|${{ steps.get-paramters.outputs.ecr_registry_url }}|g" ./scripts/setup-react-app.sh
+          sed -i -e "s|__image_repo_url__|${{ steps.get-paramters.outputs.ecr_repo_name }}|g" ./scripts/setup-react-app.sh
+            
           cat ./scripts/setup-react-app.sh
 
       - name: Deploy build
@@ -48,6 +64,6 @@ jobs:
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --comment "Setup" \
-            --targets "Key=instanceIds,Values=${{ steps.get-ec2-instance-id.outputs.ec2_instance_id }}" \
+            --targets "Key=instanceIds,Values=${{ steps.get-paramters.outputs.ec2_instance_id }}" \
             --parameters "commands=$SCRIPT_CONTENT"  \
             --region ${{ env.AWS_REGION}}
