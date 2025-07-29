@@ -1,16 +1,21 @@
 #!/bin/bash
 set -e
 
-PRE_SIGNED_URL="__signed_url__"
+PRE_SIGNED_URL="https://adi-s3-bucket-01.s3.ap-south-1.amazonaws.com/latest-builds/react-app-latest.tar?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAS4MTC57YH7UOBG4W%2F20250729%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20250729T190019Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&X-Amz-Signature=eac81ac7955a37d41683960b2a301793a708370b907f9d1d0f8201eb0ba79ef4"
 TAR_FILE="/tmp/react-app-latest.tar"
-IMAGE_NAME="__image_name__"
-IMAGE_REPO_URL="__image_repo_url__"
+IMAGE_NAME="react-app"
+IMAGE_REPO_URL="198413840368.dkr.ecr.ap-south-1.amazonaws.com"
 
 # Install Docker if needed
 if ! command -v docker &> /dev/null; then
   sudo apt update && sudo apt install -y docker.io
   sudo systemctl enable docker
   sudo systemctl start docker
+fi
+
+# Delete older File if it exists
+if [ -f "$TAR_FILE" ]; then
+  sudo rm -f "$TAR_FILE"
 fi
 
 # Download Docker image from S3 (pre-signed URL)
