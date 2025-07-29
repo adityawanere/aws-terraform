@@ -24,7 +24,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t ${{ secrets.ECR_REPO_NAME }} .
-        working-directory: app-files
+        working-directory: ./app-files
 
       - name: Tag image for ECR
         run: |
