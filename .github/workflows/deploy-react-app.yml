@@ -1,0 +1,41 @@
+name: Deploy React app
+on:
+  workflow_dispatch:
+jobs:
+  deploy-app:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      TF_VAR_key_name: ${{ secrets.TF_VAR_key_name }}
+    steps:
+      - name: Checkout Repo Content
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY}}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get EC2 Instance ID from SSM
+        id: get-ec2-instance-id
+        run: |
+          EC2_INSTANCE_ID=$(aws ssm get-parameter \
+          --name "/devops/react-site-ec2-instance-id" \
+          --query "Parameter.Value" \
+          --output text)
+          echo "ec2_instance_id=$EC2_INSTANCE_ID" >> $GITHUB_OUTPUT
+
+      - name: Deploy build
+        run: |
+          SCRIPT_CONTENT=$(jq -Rc . < scripts/setup-react-app.sh | jq -s .)
+
+          aws ssm send-command \
+          --document-name "AWS-RunShellScript" \
+          --comment "Deploy React app" \
+          --targets "Key=instanceIds,Values=${{ steps.get-ec2-instance-id.outputs.ec2_instance_id }}" \
+          --parameters "commands=$SCRIPT_CONTENT"  \
+          --region ${{ env.AWS_REGION}}
