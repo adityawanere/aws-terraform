@@ -28,7 +28,7 @@ jobs:
         id: get-version
         run: |
           fullVersion=$(jq -r '.["app-version"]' version.json)
-          echo "Full Verison: $fullVersion"
+          echo "Full Version: $fullVersion"
           majorVersion=$(echo "$fullVersion" | cut -d. -f1)
           minorVersion=$(echo "$fullVersion" | cut -d. -f2)
           patchVersion=$(echo "$fullVersion" | cut -d. -f3)
@@ -84,13 +84,11 @@ jobs:
 
           # Also Tag Latest
           docker tag ${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest
-        working-directory: app-files
 
       - name: Push to ECR
         run: |
           docker push ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:${{ steps.get-version.outputs.version }}
           docker push ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest
-        working-directory: app-files
 
       - name: Save Docker image as tar
         run: |
