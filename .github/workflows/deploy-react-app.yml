@@ -52,5 +52,5 @@ jobs:
           --document-name "AWS-RunShellScript" \
           --comment "Deploy React app" \
           --targets "Key=instanceIds,Values=${{ steps.get-ec2-instance-id.outputs.ec2_instance_id }}" \
-          --parameters "commands=[$SCRIPT_CONTENT]"  \
+          --parameters "commands=$SCRIPT_CONTENT"  \
           --region ${{ env.AWS_REGION}}
