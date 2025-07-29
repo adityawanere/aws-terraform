@@ -1,10 +1,11 @@
 name: Build React app
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - app-files/*
+  #   pull_request:
+  #     branches:
+  #       - main
+  #     paths:
+  #       - app-files/*
+  workflow_dispatch:
 jobs:
   build-app:
     runs-on: ubuntu-latest
@@ -24,7 +25,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t ${{ secrets.ECR_REPO_NAME }} .
-        working-directory: app-files
+        working-directory: ./app-files
 
       - name: Tag image for ECR
         run: |
