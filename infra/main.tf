@@ -143,7 +143,7 @@ resource "aws_ssm_parameter" "react_site_ec2_instance_id" {
 }
 
 resource "aws_ecr_repository" "my_ecr_registry" {
-  name                 = "react-app"
+  name                 = "main-ecr"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
