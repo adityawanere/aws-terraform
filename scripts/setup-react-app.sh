@@ -1,24 +1,26 @@
 #!/bin/bash
 set -e
 
-CONTAINER_NAME="react-app"
-PORT=80
+PRE_SIGNED_URL="$1"
+TAR_FILE="/tmp/react-app-latest.tar"
+IMAGE_NAME="react-app"
 
-echo "[INFO] Fetching ECR registry and repo from SSM..."
-ECR_REGISTRY=$(aws ssm get-parameter --name "/devops/ecr-registry_url" --with-decryption --query "Parameter.Value" --output text)
-ECR_REPO_NAME=$(aws ssm get-parameter --name "/devops/ecr-repo-name" --with-decryption --query "Parameter.Value" --output text)
+# Install Docker if needed
+if ! command -v docker &> /dev/null; then
+  sudo apt update && sudo apt install -y docker.io
+  sudo systemctl enable docker
+  sudo systemctl start docker
+fi
 
+# Download Docker image from S3 (pre-signed URL)
+curl -o $TAR_FILE "$PRE_SIGNED_URL"
 
-echo "[INFO] Logging in to ECR..."
-aws ecr get-login-password | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+# Load Docker image
+docker load -i $TAR_FILE
 
-echo "[INFO] Pulling image from ECR..."
-docker pull "$ECR_REGISTRY/$ECR_REPO_NAME:latest"
+# Stop previous container
+docker stop react-app || true
+docker rm react-app || true
 
-echo "[INFO] Removing old container (if any)..."
-docker rm -f "$CONTAINER_NAME" || true
-
-echo "[INFO] Running new container..."
-docker run -d -p "$PORT:$PORT" --name "$CONTAINER_NAME" "$ECR_REGISTRY/$ECR_REPO_NAME:latest"
-
-echo "[SUCCESS] Deployment complete!"
+# Run the container
+docker run -d --name react-app -p 80:80 $IMAGE_NAME:latest
