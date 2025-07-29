@@ -74,7 +74,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ steps.get-ecr-info.outputs.ecr_repo_name }}:${{ steps.get-version.outputs.version }} .
+          docker build -t ${{ steps.get-ecr-info.outputs.ecr_repo_name }}:${{ steps.get-version.outputs.version }} -t ${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest .
         working-directory: app-files
 
       - name: Tag image for ECR
