@@ -28,7 +28,7 @@ jobs:
         id: get-version
         run: |
           fullVersion=$(jq -r '.["app-version"]' version.json)
-          echo "Full Verison: $fullVersion"
+          echo "Full Version: $fullVersion"
           majorVersion=$(echo "$fullVersion" | cut -d. -f1)
           minorVersion=$(echo "$fullVersion" | cut -d. -f2)
           patchVersion=$(echo "$fullVersion" | cut -d. -f3)
@@ -74,7 +74,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ steps.get-ecr-info.outputs.ecr_repo_name }}:${{ steps.get-version.outputs.version }} .
+          docker build -t ${{ steps.get-ecr-info.outputs.ecr_repo_name }}:${{ steps.get-version.outputs.version }} -t ${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest .
         working-directory: app-files
 
       - name: Tag image for ECR
@@ -84,13 +84,11 @@ jobs:
 
           # Also Tag Latest
           docker tag ${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest
-        working-directory: app-files
 
       - name: Push to ECR
         run: |
           docker push ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:${{ steps.get-version.outputs.version }}
           docker push ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest
-        working-directory: app-files
 
       - name: Save Docker image as tar
         run: |
@@ -100,4 +98,14 @@ jobs:
       - name: Upload Docker tar to S3 (latest only)
         run: |
           aws s3 cp react-app.tar s3://adi-s3-bucket-01/latest-builds/react-app-latest.tar --storage-class STANDARD_IA
+        working-directory: app-files
+
+      - name: Commit updated version.json
+        run: |
+          git config --global user.name "Aditya Wanere"
+          git config --global user.email "aditya.wanere2000@gmail.com"
+
+          git add version.json
+          git commit -m "Increments app version to ${{ steps.get-version.outputs.version }}" || echo "No changes to commit"
+          git push origin main --force
         working-directory: app-files
