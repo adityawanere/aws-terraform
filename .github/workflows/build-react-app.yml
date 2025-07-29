@@ -17,25 +17,49 @@ jobs:
       - name: Checkout Repo Content
         uses: actions/checkout@v3
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY}}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get ECR info
+        id: get-ecr-info
+        run: |
+          ECR_REGISTRY_URL=$(aws ssm get-parameter \
+            --name "/devops/ecr-registry_url" \
+            --query "Parameter.Value" \
+            --output text)
+
+            echo "ecr_registry_url=$ECR_REGISTRY_URL" >> $GITHUB_OUTPUT
+
+          ECR_REPO_NAME=$(aws ssm get-parameter \
+            --name "/devops/ecr-repo-name" \
+            --query "Parameter.Value" \
+            --output text)
+
+            echo "ecr_repo_name=$ECR_REPO_NAME" >> $GITHUB_OUTPUT
+
       - name: Login to Amazon ECR
         id: login-ecr
         run: |
           aws ecr get-login-password \
            | docker login \
                --username AWS \
-               --password-stdin ${{ secrets.ECR_REGISTRY }}
+               --password-stdin ${{ steps.get-ecr-info.outputs.ecr_registry_url }}
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.ECR_REPO_NAME }} .
+          docker build -t ${{ steps.get-ecr-info.outputs.ecr_repo_name }} .
         working-directory: ./app-files
 
       - name: Tag image for ECR
         run: |
-          docker tag ${{ secrets.ECR_REPO_NAME }}:latest ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPO_NAME }}:latest
+          docker tag ${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest
         working-directory: app-files
 
       - name: Push to ECR
         run: |
-          docker push ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPO_NAME }}:latest
+          docker push ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest
         working-directory: app-files
