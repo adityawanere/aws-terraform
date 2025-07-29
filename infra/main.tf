@@ -144,7 +144,7 @@ resource "aws_ssm_parameter" "react_site_ec2_instance_id" {
 
 # Create ECR Registry
 resource "aws_ecr_repository" "my_ecr_registry" {
-  name                 = "main-ecr"
+  name                 = "react-app"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
