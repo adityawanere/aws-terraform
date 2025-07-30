@@ -29,7 +29,7 @@ if ! command -v aws &> /dev/null; then
 fi
 
 # Authenticate Docker to ECR
-aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin IMAGE_REPO_URL
+aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $IMAGE_REPO_URL
 
 # Pull the latest image from ECR
 sudo docker pull $IMAGE_REPO_URL/$IMAGE_NAME:$IMAGE_TAG
