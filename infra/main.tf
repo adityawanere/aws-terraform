@@ -116,6 +116,19 @@ resource "aws_iam_instance_profile" "ssm_profile" {
   role = aws_iam_role.ssm_role.name
 }
 
+# Attach ECR access policy
+resource "aws_iam_role_policy_attachment" "ecr_access" {
+  role       = aws_iam_role.ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+# Attach S3 access policy (read-only example)
+resource "aws_iam_role_policy_attachment" "s3_access" {
+  role       = aws_iam_role.ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+}
+
+
 
 # Creates Linux EC2 instance
 resource "aws_instance" "react_site_ec2_instance" {
