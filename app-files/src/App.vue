@@ -11,7 +11,7 @@ import HelloWorld from "./components/HelloWorld.vue";
       <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div>
-  <HelloWorld msg="My React site hosted on AWS" />
+  <HelloWorld msg="My React site hosted on AWS EC2 is running" />
 </template>
 
 <style scoped>

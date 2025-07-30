@@ -60,6 +60,7 @@ jobs:
           sed -i -e "s|__image_name__|${{ steps.get-paramters.outputs.ecr_repo_name }}|g" ./scripts/setup-react-app.sh
           sed -i -e "s|__aws_region__|${{ env.AWS_REGION }}|g" ./scripts/setup-react-app.sh
             
+          #TO-DO remove cat
           cat ./scripts/setup-react-app.sh
 
       - name: Deploy build
