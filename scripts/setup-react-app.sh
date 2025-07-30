@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-PRE_SIGNED_URL="__signed_url__"
-TAR_FILE="/tmp/react-app-latest.tar"
 IMAGE_NAME="__image_name__"
 IMAGE_REPO_URL="__image_repo_url__"
+IMAGE_TAG="__image_tag__"
+AWS_REGION="__aws_region__"
 
 # Install Docker if needed
 if ! command -v docker &> /dev/null; then
@@ -13,20 +13,31 @@ if ! command -v docker &> /dev/null; then
   sudo systemctl start docker
 fi
 
-# Delete older File if it exists
-if [ -f "$TAR_FILE" ]; then
-  sudo rm -f "$TAR_FILE"
+# Install AWS CLI if needed
+if ! command -v aws &> /dev/null; then
+  sudo apt update && sudo apt install -y unzip
+  curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+  unzip awscli-bundle.zip
+
+  # Create Symlink for Python3 
+  sudo ln -s /usr/bin/python3 /usr/bin/python
+  # Install Python3.12 venv
+  sudo apt install python3.12-venv
+
+  #install AWS CLI
+  sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
 fi
 
-# Download Docker image from S3 (pre-signed URL)
-sudo curl -o $TAR_FILE "$PRE_SIGNED_URL"
+# Authenticate Docker to ECR
+aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin IMAGE_REPO_URL
 
-# Load Docker image
-sudo docker load -i $TAR_FILE
+# Pull the latest image from ECR
+sudo docker pull $IMAGE_REPO_URL/$IMAGE_NAME:$IMAGE_TAG
 
 # Stop previous container
 sudo docker stop react-app || true
 sudo docker rm react-app || true
 
 # Run the container
-sudo docker run -d --name react-app -p 80:80 $IMAGE_REPO_URL/$IMAGE_NAME:latest
+sudo docker run -d --name react-app -p 80:80 $IMAGE_REPO_URL/$IMAGE_NAME:$IMAGE_TAG
+

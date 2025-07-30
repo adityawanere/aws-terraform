@@ -1,6 +1,12 @@
 name: Deploy React app
 on:
   workflow_dispatch:
+    inputs:
+      app-verison:
+        description: "Version of the React app to deploy"
+        required: false
+        type: string
+        default: "latest"
 jobs:
   deploy-app:
     runs-on: ubuntu-latest
@@ -43,17 +49,16 @@ jobs:
 
             echo "ecr_repo_name=$ECR_REPO_NAME" >> $GITHUB_OUTPUT
 
-      - name: Generate pre-signed URL
-        id: presign-url
-        run: |
-          URL=$(aws s3 presign s3://adi-s3-bucket-01/latest-builds/react-app-latest.tar --expires-in 900)
+      - name: Update setup script with parameters
 
+        run: |
           sudo apt-get install -y dos2unix
           sudo dos2unix ./scripts/*
 
-          sed -i -e "s|__signed_url__|$URL|g" ./scripts/setup-react-app.sh
+          sed -i -e "s|__image_tag__|${{ github.event.inputs.app-verison }}|g" ./scripts/setup-react-app.sh
           sed -i -e "s|__image_repo_url__|${{ steps.get-paramters.outputs.ecr_registry_url }}|g" ./scripts/setup-react-app.sh
           sed -i -e "s|__image_name__|${{ steps.get-paramters.outputs.ecr_repo_name }}|g" ./scripts/setup-react-app.sh
+          sed -i -e "s|__aws_region__|${{ env.AWS_REGION }}|g" ./scripts/setup-react-app.sh
             
           cat ./scripts/setup-react-app.sh
 

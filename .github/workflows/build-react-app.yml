@@ -90,16 +90,6 @@ jobs:
           docker push ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:${{ steps.get-version.outputs.version }}
           docker push ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest
 
-      - name: Save Docker image as tar
-        run: |
-          docker save -o react-app.tar ${{ steps.get-ecr-info.outputs.ecr_registry_url }}/${{ steps.get-ecr-info.outputs.ecr_repo_name }}:latest
-        working-directory: app-files
-
-      - name: Upload Docker tar to S3 (latest only)
-        run: |
-          aws s3 cp react-app.tar s3://adi-s3-bucket-01/latest-builds/react-app-latest.tar --storage-class STANDARD_IA
-        working-directory: app-files
-
       - name: Commit updated version.json
         run: |
           git config --global user.name "Aditya Wanere"
