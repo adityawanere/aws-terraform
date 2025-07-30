@@ -106,8 +106,8 @@ jobs:
 
       - name: Commit updated version.json
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+          git config --local user.email "aditya.wanere2000@gmail.com"
+          git config --local user.name "Aditya Wanere"
 
           git add version.json
           git commit -m "Increment version to ${{ steps.get-version.outputs.version }}" || echo "No changes to commit"
