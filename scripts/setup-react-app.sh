@@ -16,8 +16,8 @@ fi
 # Install AWS CLI if needed
 if ! command -v aws &> /dev/null; then
   sudo apt update && sudo apt install -y unzip
-  curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
-  unzip awscli-bundle.zip
+  sudo curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+  sudo unzip awscli-bundle.zip
 
   # Create Symlink for Python3 
   sudo ln -s /usr/bin/python3 /usr/bin/python
@@ -25,7 +25,7 @@ if ! command -v aws &> /dev/null; then
   sudo apt install python3.12-venv
 
   #install AWS CLI
-  sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+  sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws << y
 fi
 
 # Authenticate Docker to ECR
