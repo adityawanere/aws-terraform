@@ -1,17 +1,13 @@
-# AWS Terraform React App Deployment
-
-This project automates the deployment of a React application to AWS
-infrastructure using Terraform and GitHub Actions.
-
 ## Overview
 
 - **Infrastructure as Code:** Terraform provisions AWS resources (EC2, S3, ECR,
-  IAM) and stores remote state in an S3 backend for collaboration and
-  reliability.
-- **CI/CD Pipeline:** GitHub Actions builds, uploads, and deploys the React app
-  to EC2 using AWS SSM.
-- **Remote Deployment:** Deployment scripts are executed on EC2 via AWS SSM for
-  secure, automated updates.
+  IAM) and manages remote state in an S3 backend for reliability and
+  collaboration.
+- **CI/CD Pipeline:** GitHub Actions builds the React app, creates a Docker
+  image, pushes it to ECR, and triggers deployment to EC2 using AWS SSM.
+- **Remote Deployment:** Deployment scripts are executed on EC2 via AWS SSM,
+  which pulls the latest Docker image directly from ECR for secure, automated
+  updates.
 
 ## Folder Structure
 
@@ -34,7 +30,6 @@ infrastructure using Terraform and GitHub Actions.
   - `/devops/ecr-registry_url`
   - `/devops/ecr-repo-name`
 - EC2 instance with SSM agent installed and IAM permissions.
-- S3 bucket for storing React app builds.
 
 ## Setup
 
@@ -47,7 +42,7 @@ infrastructure using Terraform and GitHub Actions.
 
 2. **Configure GitHub secrets** as described above.
 
-3. **Push your React app code** to the `react-app/` directory.
+3. **Push your React app code** to the `app-files/` directory.
 
 4. **Provision AWS resources with Terraform:**
 
@@ -58,35 +53,28 @@ infrastructure using Terraform and GitHub Actions.
      - Initialize Terraform in the `infra/` directory.
      - Check formatting and validate the configuration.
      - Create a Terraform plan and apply it automatically to create or update
+       AWS resources.
 
 5. **Build and push the React app using the workflow:**
 
-   - The GitHub Actions workflow will build your React app and upload the latest
-     build artifacts to S3.
-   - It will build a Docker image, tag it with the version and "latest", and
-     push both tags to ECR for versioning and container deployment.
-   - The workflow saves the Docker image as a tar file and uploads it to S3
-     (`latest-builds/react-app-latest.tar`) for backup and portability.
+   - The GitHub Actions workflow will build your React app, create a Docker
+     image, and push it to ECR for versioning and deployment.
    - The app version is automatically incremented and committed to
-     `version.json` on each
+     `version.json` on each build.
 
 6. **Deploy the latest build to the EC2 instance:**
 
    - The GitHub Actions workflow will remotely execute deployment scripts via
-     AWS SSM to update the EC2 instance with the latest build.
-   - It retrieves required parameters (EC2 instance ID, ECR registry URL, ECR
-     repo name) from AWS SSM.
-   - It generates a pre-signed S3 URL for the latest Docker image tar file and
-     injects runtime parameters into the deployment script.
-   - The deployment script is sent and executed on the EC2 instance using AWS
-     SSM, pulling the latest build and
+     AWS SSM to update the EC2 instance.
+   - The deployment script pulls the latest Docker image from ECR and restarts
+     the app container.
 
 ## Customization
 
 - Modify Terraform files in the `infra/` directory to adjust AWS infrastructure.
 - Edit shell scripts in the `scripts/` directory for custom provisioning and
   deployment logic.
-- Update workflow YAML files in `.github/workflows/` for
+- Update workflow YAML files in `.github/workflows/` for CI/CD changes.
 
 ## Troubleshooting
 
@@ -94,3 +82,5 @@ infrastructure using Terraform and GitHub Actions.
 - Ensure all AWS resources and SSM parameters exist and are correctly
   configured.
 - Verify EC2 instance IAM permissions and SSM agent status.
+- In case latest image is not deployed properly, check the run-command logs in
+  SSM.
