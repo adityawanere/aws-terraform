@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout Repo Content
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -26,3 +28,20 @@ jobs:
       - name: Destroy
         run: terraform destroy -auto-approve
         working-directory: infra
+
+      - name: Reset version.json file
+        run: |
+          echo '{"app-version": "2025.0.0.0"}' > ./version.json
+          # Format the JSON file
+          jq . ./version.json > tmp && mv tmp ./version.json
+        working-directory: app-files
+
+      - name: Commit updated version.json
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add version.json
+          git commit -m "Reset Json file to default" || echo "No changes to commit"
+          git push origin main
+        working-directory: app-files
