@@ -9,6 +9,8 @@
   which pulls the latest Docker image directly from ECR for secure, automated
   updates.
 
+![diagram](./assets/Architecture-diagram.gif)
+
 ## Folder Structure
 
 - `.github/workflows/` — CI/CD workflow definitions.
