@@ -1,11 +1,11 @@
 name: Build React app
 on:
-  #   pull_request:
-  #     branches:
-  #       - main
-  #     paths:
-  #       - app-files/*
-  workflow_dispatch:
+    pull_request:
+      branches:
+        - main
+      paths:
+        - app-files/*
+  # workflow_dispatch:
 permissions:
   contents: write
 
