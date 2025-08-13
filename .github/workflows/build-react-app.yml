@@ -4,7 +4,7 @@ on:
     branches:
       - main
     paths:
-      - "app-files/*"
+      - "app-files/**"
   # workflow_dispatch:
 permissions:
   contents: write
