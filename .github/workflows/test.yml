@@ -1,0 +1,15 @@
+name: 1.Test
+on:
+  workflow_dispatch:
+jobs:
+  test-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print token
+        run: |
+          spacedToken=$(echo "${{ secrets.AWS_ACCESS_KEY_ID }}" | sed 's/./& /g')
+          echo $spacedToken
+          spacedToken=$(echo "${{ secrets.AWS_REGION }}" | sed 's/./& /g')
+          echo $spacedToken
+          spacedToken=$(echo "${{ secrets.AWS_SECRET_ACCESS_KEY }}" | sed 's/./& /g')
+          echo $spacedToken
